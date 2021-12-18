@@ -1,11 +1,11 @@
 #include <iostream>
 
 #include "common/coroutine.h"
-#include <set>
+#include <stack>
 
 using namespace pebble;
 
-std::set<int64_t > coWaitSet;
+std::stack<int64_t > coWaitSet;
 
 int32_t MakeCoroutine(CoroutineSchedule *pSchedule, const cxx::function<void()>& routine)
 {
@@ -37,7 +37,7 @@ int Test(int i, CoroutineSchedule *pSchedule)
     for (int k = 0; k < 5; k++)
     {
         printf("task id %d loop idx %d\n",i , k);
-        coWaitSet.insert(pSchedule->CurrentTaskId());
+        coWaitSet.push(pSchedule->CurrentTaskId());
         pSchedule->Yield();
     }
     printf("end MakeCoroutine task id: %d\n", i);
@@ -56,7 +56,9 @@ int main()
 
     while (!coWaitSet.empty())
     {
-
+        int64_t id = coWaitSet.top();
+        coWaitSet.pop();
+        schedule.Resume(id);
     }
 
     return 0;
